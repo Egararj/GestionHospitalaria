@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import excepciones.CampoVacioException;
 import excepciones.DniException;
+import excepciones.FechaException;
 import modelo.Paciente;
 import vista.swing.FrmHospital;
 
@@ -21,8 +22,9 @@ public class Main {
 		} catch (CampoVacioException | DniException e) {
 			System.out.println(e.getMessage());
 		}*/
-		FrmHospital frmHospital = new FrmHospital();
 
+		FrmHospital frmHospital = new FrmHospital();
+		
 		
 	}
 

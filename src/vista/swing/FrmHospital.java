@@ -2,6 +2,7 @@ package vista.swing;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -19,13 +21,21 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
+import excepciones.CampoVacioException;
+import excepciones.DniException;
+import excepciones.FechaException;
 import modelo.Paciente;
+import repositorio.HospitalRepositorio;
+import servicio.HospitalServicio;
+import utilidades.GeneraPacientes;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 
 public class FrmHospital extends JFrame {
 
 	private static final long serialVersionUID = 1L;
-	private JPanel panel, panelLibros, panelMantenimientoLibro, panelNavegador;
+	private JPanel panel, panelPaciente, panelMantenimientoLibro, panelNavegador;
 	private ImageIcon nuevo, editar, borrar, guardar, deshacer, primero, izquierda, derecha, ultimo;
 	private JButton btnNuevo, btnEditar, btnBorrar, btnGuardar, btnDeshacer, btnFiltrar;
 	private JLabel lblIdPaciente, lblDni, lblNombre, lblApellidos, lblIsbn, lblFechaNacimiento, lblFecha2;
@@ -33,7 +43,7 @@ public class FrmHospital extends JFrame {
 	private JCheckBox chcPrestado;
 	private JButton btnPrimero, btnIzquierda, btnDerecha, btnFinal;
 	private JComboBox cmbConsulta;
-	private boolean b, libroNuevo;
+	private boolean b, pacienteNuevo;
 	private int puntero, tamaño;
 	DefaultTableModel dtm;
 	List<Paciente>pacientes= new ArrayList<Paciente>();
@@ -52,28 +62,238 @@ public class FrmHospital extends JFrame {
 		panel.setLayout(null);
 		
 		
-		definirEventos();
+		
+		
 		definirVentana();
-		mostrarPaciente();
+		definirEventos();
+
+		habilitarNavegador(b);
+		habilitarMantenimiento(b);
+		
+		/*GeneraPacientes gp = new GeneraPacientes();
+		try {
+			gp.GeneraPacientes();
+		} catch (CampoVacioException | DniException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		HospitalServicio hospitalServicio = new HospitalServicio();
+		pacientes = hospitalServicio.obtenerTodos();
+		hospitalServicio = null;
+	
+		cargarGrid(pacientes);
+		mostrarPaciente(puntero);
 		
 		this.setVisible(true);
 	}
 
 
 
-	private void mostrarPaciente() {
+	private void cargarGrid(List<Paciente> pacientes) {
+
+		dtm.setRowCount(0);
+		dtm.setColumnCount(0);
+		String pacien [] = {"Dni","Nombre","Apellidos","Diagnostico","FechaConsulta"};
+		dtm.setColumnIdentifiers(pacien);
+		
+		for (Paciente p: pacientes) {
+			String fecha = "";
+			if(p.getUltimaConsulta() != null) {
+				fecha = p.getUltimaConsulta().toString();
+			}
+			Object[] fila = {p.getDni(),p.getNombre(),p.getApellidos(),p.getDiagnostico(), fecha};
+			dtm.addRow(fila);
+		}
+		
+	}
+
+
+
+	private void habilitarMantenimiento(boolean b) {
+
+		btnNuevo.setEnabled(b);
+		btnEditar.setEnabled(b);
+		btnBorrar.setEnabled(b);
+		btnGuardar.setEnabled(!b);
+		btnDeshacer.setEnabled(!b);
+		
+	}
+
+
+
+	private void habilitarNavegador(boolean b) {
+		
+		btnIzquierda.setEnabled(b);
+		btnDerecha.setEnabled(b);
+		btnPrimero.setEnabled(b);
+		btnFinal.setEnabled(b);
+		
+	}
+
+
+
+	private void mostrarPaciente(int puntero) {
 
 		Paciente paciente = pacientes.get(puntero);
-		
+		textDni.setText(paciente.getDni());
+		textNombre.setText(paciente.getNombre());
+		textApellidos.setText(paciente.getApellidos());
+		textFechaNacimineto.setText(paciente.getFechaNacimiento().toString());
+
 	}
 
 
 
 	private void definirEventos() {
 
+		btnPrimero.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				puntero = 0;
+				mostrarPaciente(puntero);
+
+			}
+		});
 		
+		btnIzquierda.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				puntero --;
+				if(puntero < 0) puntero = 0;
+				mostrarPaciente(puntero);
+			}
+		});
+		
+		btnDerecha.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				puntero++;
+				if(puntero == pacientes.size()) puntero = pacientes.size()-1; 
+				mostrarPaciente(puntero);
+			}
+		});
+		
+		btnFinal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				puntero = pacientes.size()-1;
+				mostrarPaciente(puntero);
+			}
+		});
+		
+		btnNuevo.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				borrarCampos();
+				habilitarNavegador(!b);
+				habilitarMantenimiento(!b);
+				pacienteNuevo = true;
+				
+			}
+
+		});
+		
+		btnGuardar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				if(pacienteNuevo) {
+					HospitalServicio hs = new HospitalServicio();
+					try {
+						hs.agregarPaciente(textDni.getText(), textNombre.getText(), textApellidos.getText(), textFechaNacimineto.getText());
+					} catch (CampoVacioException | FechaException | IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					hs.obtenerTodos();
+				}else {
+					
+				}
+				
+				puntero = 0;
+				mostrarPaciente(puntero);
+				habilitarNavegador(b);
+				habilitarMantenimiento(b);
+				
+			}
+		});
+		
+		btnBorrar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				int opcion = JOptionPane.showConfirmDialog(null,"¿Tas seguro?", "Ventana", JOptionPane.YES_NO_OPTION);
+				if(opcion == JOptionPane.YES_OPTION) {
+					pacientes.remove(puntero);
+					HospitalServicio hs = new HospitalServicio();
+					try {
+						hs.borrarPaciente(puntero);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+				puntero = 0;
+				mostrarPaciente(puntero);
+				habilitarNavegador(b);
+				habilitarMantenimiento(b);
+				
+			}
+		});
+		
+		btnDeshacer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				puntero = 0;
+				mostrarPaciente(puntero);
+				habilitarNavegador(b);
+				habilitarMantenimiento(b);
+				
+			}
+		});
+		
+		btnFiltrar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				HospitalServicio hs = new HospitalServicio();
+				List<Paciente> pacientesFiltrado = null;
+				int opcion = cmbConsulta.getSelectedIndex();		
+				switch (opcion) {
+				
+				case 0:
+					
+					pacientes = hs.obtenerTodos();
+					cargarGrid(pacientes);
+					break;
+					
+				case 1:
+					
+					pacientes = hs.obtenerTodos();					
+					String filtro = textConsulta.getText().toLowerCase();
+					if(filtro == null) break;
+					pacientesFiltrado = pacientes.stream()
+						.filter(paciente -> paciente.getNombre().toLowerCase().startsWith(filtro))
+						.toList();
+					cargarGrid(pacientesFiltrado);
+					break;
+					
+				case 2:
+					
+					pacientes = hs.obtenerTodos();
+					
+					pacientesFiltrado = pacientes.stream()
+							.filter(paciente -> paciente.isEnTratamiento())
+							.toList();
+					cargarGrid(pacientesFiltrado);
+					break;
+				}
+			}
+		});
 	}
 
+	private void borrarCampos() {
+		textNombre.setText("");
+		textApellidos.setText("");
+		textDni.setText("");
+		textFechaNacimineto.setText("");
+	}
 
 
 	private void definirVentana() {
@@ -109,73 +329,73 @@ public class FrmHospital extends JFrame {
 		btnDeshacer.setEnabled(false);
 		panelMantenimientoLibro.add(btnDeshacer);
 		
-		panelLibros = new JPanel();
-		panelLibros.setBounds(42, 161, 503, 224);
-		panel.add(panelLibros);
-		panelLibros.setLayout(null);
+		panelPaciente = new JPanel();
+		panelPaciente.setBounds(42, 161, 503, 224);
+		panel.add(panelPaciente);
+		panelPaciente.setLayout(null);
 		
-		lblIdPaciente = new JLabel("Id Libro:");
+		lblIdPaciente = new JLabel("Id Paciente:");
 		lblIdPaciente.setBounds(10, 11, 88, 14);
-		panelLibros.add(lblIdPaciente);
+		panelPaciente.add(lblIdPaciente);
 		
 		textIdPaciente = new JTextField();
 		textIdPaciente.setBounds(108, 8, 86, 20);
-		panelLibros.add(textIdPaciente);
+		panelPaciente.add(textIdPaciente);
 		textIdPaciente.setColumns(10);
 		
 		lblDni = new JLabel("Dni:");
 		lblDni.setBounds(10, 42, 88, 14);
-		panelLibros.add(lblDni);
+		panelPaciente.add(lblDni);
 		
 		textDni = new JTextField();
 		textDni.setBounds(108, 39, 251, 20);
-		panelLibros.add(textDni);
+		panelPaciente.add(textDni);
 		textDni.setColumns(10);
 		
 		lblNombre = new JLabel("Nombre:");
 		lblNombre.setBounds(10, 73, 46, 14);
-		panelLibros.add(lblNombre);
+		panelPaciente.add(lblNombre);
 		
 		textNombre = new JTextField();
 		textNombre.setBounds(108, 70, 251, 20);
-		panelLibros.add(textNombre);
+		panelPaciente.add(textNombre);
 		textNombre.setColumns(10);
 		
 		lblApellidos = new JLabel("Apellidos:");
 		lblApellidos.setBounds(10, 104, 88, 14);
-		panelLibros.add(lblApellidos);
+		panelPaciente.add(lblApellidos);
 		
 		textApellidos = new JTextField();
 		textApellidos.setBounds(108, 101, 251, 20);
-		panelLibros.add(textApellidos);
+		panelPaciente.add(textApellidos);
 		textApellidos.setColumns(10);
 		
 		lblIsbn = new JLabel("Isbn:");
 		lblIsbn.setBounds(10, 135, 46, 14);
-		panelLibros.add(lblIsbn);
+		panelPaciente.add(lblIsbn);
 		
 		textIsbn = new JTextField();
 		textIsbn.setBounds(108, 132, 251, 20);
-		panelLibros.add(textIsbn);
+		panelPaciente.add(textIsbn);
 		textIsbn.setColumns(10);
 		
 		lblFechaNacimiento = new JLabel("Fecha nacimiento:");
 		lblFechaNacimiento.setBounds(10, 166, 88, 14);
-		panelLibros.add(lblFechaNacimiento);
+		panelPaciente.add(lblFechaNacimiento);
 		
 		textFechaNacimineto = new JTextField();
 		textFechaNacimineto.setBounds(108, 163, 133, 20);
-		panelLibros.add(textFechaNacimineto);
+		panelPaciente.add(textFechaNacimineto);
 		textFechaNacimineto.setColumns(10);
 		
 		lblFecha2 = new JLabel("aaaa-mm-dd");
 		lblFecha2.setBounds(251, 166, 108, 14);
-		panelLibros.add(lblFecha2);
+		panelPaciente.add(lblFecha2);
 		
 		chcPrestado = new JCheckBox("Prestado");
 		chcPrestado.setBounds(1, 187, 97, 23);
 		chcPrestado.setEnabled(false);
-		panelLibros.add(chcPrestado);
+		panelPaciente.add(chcPrestado);
 		
 		panelNavegador = new JPanel();
 		panelNavegador.setBounds(42, 396, 249, 71);
@@ -203,7 +423,7 @@ public class FrmHospital extends JFrame {
 		panelNavegador.add(btnFinal);
 		
 		cmbConsulta = new JComboBox();
-		cmbConsulta.setModel(new DefaultComboBoxModel(new String[] {"todos", "autor", "no devueltos"}));
+		cmbConsulta.setModel(new DefaultComboBoxModel(new String[] {"todos", "nombre", "ingresados"}));
 		cmbConsulta.setBounds(597, 54, 134, 22);
 		panel.add(cmbConsulta);
 		

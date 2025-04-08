@@ -1,12 +1,15 @@
 package modelo;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 import excepciones.CampoVacioException;
 import excepciones.DniException;
+import excepciones.FechaException;
 import utilidades.CompruebaDni;
+import utilidades.CompruebaFecha;
 
-public class Paciente {
+public class Paciente implements Serializable{
 	private String dni;
 	private String nombre;
 	private String apellidos;
@@ -15,7 +18,7 @@ public class Paciente {
 	private LocalDate ultimaConsulta;
 	private boolean enTratamiento;
 	
-	public Paciente(String dni, String nombre, String apellidos, LocalDate fechaNacimiento, String diagnostico, boolean enTratamiento) throws CampoVacioException, DniException {
+	public Paciente(String dni, String nombre, String apellidos, String fechaNacimiento, String diagnostico, boolean enTratamiento) throws CampoVacioException, DniException, FechaException {
 		super();
 		this.setDni(dni);
 		this.setNombre(nombre);
@@ -25,6 +28,18 @@ public class Paciente {
 		this.setEnTratamiento(enTratamiento);
 	}
 
+	public Paciente(String dni, String nombre, String apellidos, String fechaNacimiento, String diagnostico, String ultimaConsulta, boolean enTratamiento) throws CampoVacioException, FechaException {
+		super();
+		this.dni = dni;
+		this.nombre = nombre;
+		this.apellidos = apellidos;
+		this.setFechaNacimiento(fechaNacimiento);
+		this.diagnostico = diagnostico;
+		this.setUltimaConsulta(ultimaConsulta);
+		this.enTratamiento = enTratamiento;
+	}
+
+	
 	public String getDni() {
 		return dni;
 	}
@@ -62,10 +77,10 @@ public class Paciente {
 		return fechaNacimiento;
 	}
 
-	public void setFechaNacimiento(LocalDate fechaNacimiento) throws CampoVacioException {
-		if(fechaNacimiento == null) throw new CampoVacioException();
-
-		this.fechaNacimiento = fechaNacimiento;
+	public void setFechaNacimiento(String fechaNacimiento) throws CampoVacioException, FechaException {
+		LocalDate fecha = CompruebaFecha.compruebaFecha(fechaNacimiento);
+		
+		this.fechaNacimiento = fecha;
 	}
 
 	public String getDiagnostico() {
@@ -82,8 +97,10 @@ public class Paciente {
 		return ultimaConsulta;
 	}
 
-	public void setUltimaConsulta(LocalDate ultimaConsulta) {
-		this.ultimaConsulta = ultimaConsulta;
+	public void setUltimaConsulta(String ultimaConsulta) throws FechaException {
+		LocalDate fecha = CompruebaFecha.compruebaFecha(ultimaConsulta);
+
+		this.ultimaConsulta = fecha;
 	}
 
 	public boolean isEnTratamiento() {
@@ -91,7 +108,6 @@ public class Paciente {
 	}
 
 	public void setEnTratamiento(boolean enTratamiento) {
-		enTratamiento = true;
 		this.enTratamiento = enTratamiento;
 	}
 
