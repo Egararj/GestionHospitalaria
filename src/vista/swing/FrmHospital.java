@@ -54,8 +54,17 @@ public class FrmHospital extends JFrame {
 		
 		definirEventos();
 		definirVentana();
+		mostrarPaciente();
 		
 		this.setVisible(true);
+	}
+
+
+
+	private void mostrarPaciente() {
+
+		Paciente paciente = pacientes.get(puntero);
+		
 	}
 
 
