@@ -44,4 +44,16 @@ public class HospitalServicio implements IHospital{
 		return null;
 	}
 
+	@Override
+	public Paciente editarPaciente(int puntero, boolean prestado) throws FileNotFoundException, IOException {
+		HospitalRepositorio hr = new HospitalRepositorio();
+		List<Paciente> pacientes = hr.cargarPacientes();
+		Paciente paciente = pacientes.get(puntero);
+		paciente.setEnTratamiento(prestado);
+		pacientes.set(puntero, paciente);
+		hr.guardarPacientes();
+		
+		return null;
+	}
+
 }

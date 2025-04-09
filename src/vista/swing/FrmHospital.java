@@ -207,7 +207,14 @@ public class FrmHospital extends JFrame {
 					}
 					hs.obtenerTodos();
 				}else {
-					
+					chcIngresado.setEnabled(b);
+					HospitalServicio hs = new HospitalServicio();
+					try {
+						hs.editarPaciente(puntero, chcIngresado.isSelected());
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 				HospitalServicio hs = new HospitalServicio();
 				pacientes = hs.obtenerTodos();
@@ -216,6 +223,7 @@ public class FrmHospital extends JFrame {
 				mostrarPaciente(puntero);
 				habilitarNavegador(b);
 				habilitarMantenimiento(b);
+				chcIngresado.setEnabled(!b);
 				
 			}
 		});
@@ -249,6 +257,7 @@ public class FrmHospital extends JFrame {
 				mostrarPaciente(puntero);
 				habilitarNavegador(b);
 				habilitarMantenimiento(b);
+				chcIngresado.setEnabled(!b);
 				
 			}
 		});
@@ -288,6 +297,17 @@ public class FrmHospital extends JFrame {
 					cargarGrid(pacientesFiltrado);
 					break;
 				}
+			}
+		});
+		
+		btnEditar.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				
+				pacienteNuevo = false;
+				habilitarMantenimiento(!b);
+				habilitarNavegador(!b);
+				chcIngresado.setEnabled(b);
+				
 			}
 		});
 	}

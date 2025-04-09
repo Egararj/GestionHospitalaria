@@ -15,4 +15,6 @@ public interface IHospital {
 	Paciente agregarPaciente(String dni, String nombre, String apellidos, String fechaNacimiento) throws CampoVacioException, FechaException, FileNotFoundException, IOException;
 	
 	Paciente borrarPaciente(int puntero) throws FileNotFoundException, IOException;
+	
+	Paciente editarPaciente(int puntero, boolean prestado) throws FileNotFoundException, IOException;
 }
