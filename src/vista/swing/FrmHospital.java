@@ -27,7 +27,6 @@ import excepciones.FechaException;
 import modelo.Paciente;
 import repositorio.HospitalRepositorio;
 import servicio.HospitalServicio;
-import utilidades.GeneraPacientes;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
@@ -40,7 +39,7 @@ public class FrmHospital extends JFrame {
 	private JButton btnNuevo, btnEditar, btnBorrar, btnGuardar, btnDeshacer, btnFiltrar;
 	private JLabel lblIdPaciente, lblDni, lblNombre, lblApellidos, lblIsbn, lblFechaNacimiento, lblFecha2;
 	private JTextField textIdPaciente, textDni, textNombre, textApellidos, textIsbn, textFechaNacimineto, textConsulta;
-	private JCheckBox chcPrestado;
+	private JCheckBox chcIngresado;
 	private JButton btnPrimero, btnIzquierda, btnDerecha, btnFinal;
 	private JComboBox cmbConsulta;
 	private boolean b, pacienteNuevo;
@@ -93,16 +92,18 @@ public class FrmHospital extends JFrame {
 
 		dtm.setRowCount(0);
 		dtm.setColumnCount(0);
-		String pacien [] = {"Dni","Nombre","Apellidos","Diagnostico","FechaConsulta"};
-		dtm.setColumnIdentifiers(pacien);
+		String[] pacientitos = {"Dni","Nombre","Apellidos","Diagnóstico","Ultima Consulta"};
+		dtm.setColumnIdentifiers(pacientitos);
 		
-		for (Paciente p: pacientes) {
-			String fecha = "";
-			if(p.getUltimaConsulta() != null) {
-				fecha = p.getUltimaConsulta().toString();
+		for (Paciente p:pacientes) {
+			String diagnostico = "";
+			if(p.getDiagnostico() != null) {
+				diagnostico = p.getDiagnostico();
 			}
-			Object[] fila = {p.getDni(),p.getNombre(),p.getApellidos(),p.getDiagnostico(), fecha};
+			
+			Object[] fila = {p.getDni(),p.getNombre(),p.getApellidos(),diagnostico,p.getUltimaConsulta()};
 			dtm.addRow(fila);
+			;
 		}
 		
 	}
@@ -139,6 +140,7 @@ public class FrmHospital extends JFrame {
 		textNombre.setText(paciente.getNombre());
 		textApellidos.setText(paciente.getApellidos());
 		textFechaNacimineto.setText(paciente.getFechaNacimiento().toString());
+		chcIngresado.setSelected(paciente.isEnTratamiento());
 
 	}
 
@@ -207,6 +209,8 @@ public class FrmHospital extends JFrame {
 				}else {
 					
 				}
+				HospitalServicio hs = new HospitalServicio();
+				pacientes = hs.obtenerTodos();
 				
 				puntero = 0;
 				mostrarPaciente(puntero);
@@ -392,10 +396,10 @@ public class FrmHospital extends JFrame {
 		lblFecha2.setBounds(251, 166, 108, 14);
 		panelPaciente.add(lblFecha2);
 		
-		chcPrestado = new JCheckBox("Prestado");
-		chcPrestado.setBounds(1, 187, 97, 23);
-		chcPrestado.setEnabled(false);
-		panelPaciente.add(chcPrestado);
+		chcIngresado = new JCheckBox("Ingresado");
+		chcIngresado.setBounds(1, 187, 97, 23);
+		chcIngresado.setEnabled(false);
+		panelPaciente.add(chcIngresado);
 		
 		panelNavegador = new JPanel();
 		panelNavegador.setBounds(42, 396, 249, 71);

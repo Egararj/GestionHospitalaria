@@ -2,6 +2,7 @@ package servicio;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 import excepciones.CampoVacioException;
@@ -24,7 +25,8 @@ public class HospitalServicio implements IHospital{
 	@Override
 	public Paciente agregarPaciente(String dni, String nombre, String apellidos, String fechaNacimiento) throws CampoVacioException, FechaException, FileNotFoundException, IOException {
 		
-		Paciente paciente = new Paciente(dni, nombre, apellidos, fechaNacimiento, "ta mal", fechaNacimiento, true);	
+		String ultimaConsulta = LocalDate.now().toString();
+		Paciente paciente = new Paciente(dni, nombre, apellidos, fechaNacimiento, "ta mal", ultimaConsulta, true);	
 		HospitalRepositorio hr = new HospitalRepositorio();
 		hr.agregarPaciente(paciente);
 		
@@ -34,10 +36,10 @@ public class HospitalServicio implements IHospital{
 	@Override
 	public Paciente borrarPaciente(int puntero) throws FileNotFoundException, IOException {
 		
-		HospitalRepositorio hs = new HospitalRepositorio();
-		List<Paciente> pacientes = hs.cargarPacientes();
+		HospitalRepositorio hr = new HospitalRepositorio();
+		List<Paciente> pacientes = hr.cargarPacientes();
 		pacientes.remove(puntero);
-		hs.guardarPacientes();
+		hr.guardarPacientes();
 		
 		return null;
 	}
